@@ -1,26 +1,27 @@
-export type Tile = {
+import { CHUNK_SIZE } from "../config";
+
+export interface Tile {
   walkable: boolean;
   type: string;
-};
+  variant: number;
+}
 
-export type Chunk = {
+export interface Chunk {
   x: number;
   y: number;
   tiles: Tile[][];
-};
-
-const CHUNK_SIZE = 16;
+}
 
 export class MapSystem {
   private loadedChunks: Map<string, Chunk> = new Map();
 
   constructor(private chunkLoader: (x: number, y: number) => Chunk) {}
 
-  getChunkKey(x: number, y: number) {
+  public getChunkKey(x: number, y: number): string {
     return `${x},${y}`;
   }
 
-  loadChunk(x: number, y: number) {
+  public loadChunk(x: number, y: number): void {
     const key = this.getChunkKey(x, y);
     if (!this.loadedChunks.has(key)) {
       const chunk = this.chunkLoader(x, y);
@@ -28,23 +29,19 @@ export class MapSystem {
     }
   }
 
-  unloadChunk(x: number, y: number) {
-    const key = this.getChunkKey(x, y);
-    this.loadedChunks.delete(key);
-  }
-
-  getTile(globalX: number, globalY: number): Tile | null {
+  public getTile(globalX: number, globalY: number): Tile | null {
     const chunkX = Math.floor(globalX / CHUNK_SIZE);
     const chunkY = Math.floor(globalY / CHUNK_SIZE);
     const key = this.getChunkKey(chunkX, chunkY);
     const chunk = this.loadedChunks.get(key);
     if (!chunk) return null;
-    const localX = globalX % CHUNK_SIZE;
-    const localY = globalY % CHUNK_SIZE;
+
+    const localX = globalX - chunkX * CHUNK_SIZE;
+    const localY = globalY - chunkY * CHUNK_SIZE;
     return chunk.tiles[localY]?.[localX] || null;
   }
 
-  isWalkable(globalX: number, globalY: number): boolean {
+  public isWalkable(globalX: number, globalY: number): boolean {
     const tile = this.getTile(globalX, globalY);
     return tile ? tile.walkable : false;
   }
