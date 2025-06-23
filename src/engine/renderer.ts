@@ -11,7 +11,7 @@ export class Renderer {
   public width: number;
   public height: number;
 
-  constructor(private canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement) {
     this.ctx = canvas.getContext("2d")!;
     this.ctx.imageSmoothingEnabled = false;
     this.width = canvas.width;
