@@ -1,17 +1,19 @@
-import { gameState } from "./state";
+import { Player } from "./player";
 
 export class Camera {
   public x: number;
   public y: number;
 
-  constructor() {
-    this.x = gameState.player.x;
-    this.y = gameState.player.y;
+  constructor(private player: Player) {
+    const visualPos = this.player.getVisualPosition();
+    this.x = visualPos.x;
+    this.y = visualPos.y;
   }
 
   public update(dt: number): void {
-    const interpolationFactor = 15;
-    this.x += (gameState.player.x - this.x) * interpolationFactor * dt;
-    this.y += (gameState.player.y - this.y) * interpolationFactor * dt;
+    const visualPos = this.player.getVisualPosition();
+    const interpolationFactor = 16;
+    this.x += (visualPos.x - this.x) * interpolationFactor * dt;
+    this.y += (visualPos.y - this.y) * interpolationFactor * dt;
   }
 } 

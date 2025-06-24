@@ -4,13 +4,17 @@ export interface Animation {
   frameRate: number;
 }
 
+interface AnimationState {
+  frameIndex: number;
+  frameTimer: number;
+}
+
 export class Sprite {
   public image: HTMLImageElement;
   public loaded: boolean = false;
   private animations: Map<string, Animation>;
   private currentAnimation: Animation;
-  private currentFrameIndex: number = 0;
-  private frameTimer: number = 0;
+  private animationStates: Map<string, AnimationState>;
 
   constructor(
     src: string,
@@ -24,6 +28,10 @@ export class Sprite {
     this.image.onload = () => { this.loaded = true; };
     
     this.animations = new Map(animations.map(a => [a.name, a]));
+    this.animationStates = new Map();
+    for (const anim of animations) {
+        this.animationStates.set(anim.name, { frameIndex: 0, frameTimer: 0 });
+    }
     
     const initialAnim = this.animations.get(initialAnimName);
     if (!initialAnim) {
@@ -35,23 +43,30 @@ export class Sprite {
   public setAnimation(name: string): void {
     const newAnim = this.animations.get(name);
     if (newAnim && this.currentAnimation.name !== name) {
-      this.currentAnimation = newAnim;
-      this.currentFrameIndex = 0;
-      this.frameTimer = 0;
+        this.currentAnimation = newAnim;
+        // Reset idle animations so they always start from the beginning
+        if (name.startsWith("idle-")) {
+            const state = this.animationStates.get(name)!;
+            state.frameIndex = 0;
+            state.frameTimer = 0;
+        }
     }
   }
 
   public update(dt: number): void {
-    this.frameTimer += dt;
+    const state = this.animationStates.get(this.currentAnimation.name)!;
+    
+    state.frameTimer += dt;
     const frameDuration = 1 / this.currentAnimation.frameRate;
-    if (this.frameTimer > frameDuration) {
-      this.currentFrameIndex = (this.currentFrameIndex + 1) % this.currentAnimation.frames.length;
-      this.frameTimer -= frameDuration;
+    if (state.frameTimer > frameDuration) {
+      state.frameIndex = (state.frameIndex + 1) % this.currentAnimation.frames.length;
+      state.frameTimer -= frameDuration;
     }
   }
 
   public getCurrentFrame() {
-    const frame = this.currentAnimation.frames[this.currentFrameIndex];
+    const state = this.animationStates.get(this.currentAnimation.name)!;
+    const frame = this.currentAnimation.frames[state.frameIndex];
     return {
       image: this.image,
       sx: frame.sx,

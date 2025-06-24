@@ -15,7 +15,6 @@ function main() {
   canvas.height = 12 * TILE_SIZE;
 
   const renderer = new Renderer(canvas);
-  const camera = new Camera();
   
   const mapSystem = new MapSystem(generateChunk);
   for (let y = -1; y <= 1; y++) {
@@ -25,8 +24,9 @@ function main() {
   }
 
   const player = new Player(mapSystem);
+  const camera = new Camera(player);
   const mapRenderer = new MapRenderer(renderer, mapSystem, camera);
-  const playerRenderer = new PlayerRenderer(renderer, player);
+  const playerRenderer = new PlayerRenderer(renderer, player, camera);
 
   setInterval(storeState, 5000);
   window.addEventListener("beforeunload", storeState);
